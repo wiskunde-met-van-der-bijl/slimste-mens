@@ -1,0 +1,106 @@
+const rondes = [
+  {
+    hint: "Nederlandse steden",
+    antwoorden: ["AMSTERDAM", "UTRECHT", "EINDHOVEN"]
+  },
+  {
+    hint: "Dieren",
+    antwoorden: ["OLIFANT", "KANGOEROE", "DOLFIJN"]
+  }
+];
+
+let rondeIndex = 0;
+let score = 0;
+let tijd = 60;
+let timer;
+let zichtbaar = [];
+
+function startRonde() {
+  const ronde = rondes[rondeIndex];
+  document.getElementById("hint").innerText = "🧠 " + ronde.hint;
+  zichtbaar = ronde.antwoorden.map(w => w.replace(/[A-Z]/g, "_"));
+  tijd = 60;
+  updateScore();
+  toonWoorden();
+  startTimer();
+}
+
+function toonWoorden() {
+  document.getElementById("woorden").innerHTML =
+    zichtbaar.join("<br>");
+}
+
+function raad() {
+  const input = document.getElementById("invoer");
+  const gok = input.value.toUpperCase();
+  input.value = "";
+
+  let goed = false;
+  const antwoorden = rondes[rondeIndex].antwoorden;
+
+  antwoorden.forEach((woord, i) => {
+    let nieuw = zichtbaar[i].split("");
+    for (let j = 0; j < woord.length; j++) {
+      if (woord[j] === gok || gok === woord) {
+        nieuw[j] = woord[j];
+        goed = true;
+      }
+    }
+    zichtbaar[i] = nieuw.join("");
+  });
+
+  if (goed) {
+    score += 10;
+    document.getElementById("melding").innerText = "✔ Goed!";
+  } else {
+    document.getElementById("melding").innerText = "✖ Fout!";
+  }
+
+  updateScore();
+  toonWoorden();
+  checkVoltooid();
+}
+
+function checkVoltooid() {
+  if (!zichtbaar.join("").includes("_")) {
+    clearInterval(timer);
+    document.getElementById("melding").innerText = "🎉 Ronde voltooid!";
+    setTimeout(volgendeRonde, 2000);
+  }
+}
+
+function volgendeRonde() {
+  rondeIndex++;
+  if (rondeIndex < rondes.length) {
+    startRonde();
+  } else {
+    eindeSpel();
+  }
+}
+
+function startTimer() {
+  clearInterval(timer);
+  document.getElementById("timer").innerText = "⏱️ " + tijd;
+  timer = setInterval(() => {
+    tijd--;
+    document.getElementById("timer").innerText = "⏱️ " + tijd;
+    if (tijd <= 0) {
+      clearInterval(timer);
+      volgendeRonde();
+    }
+  }, 1000);
+}
+
+function updateScore() {
+  document.getElementById("score").innerText = "⭐ " + score;
+}
+
+function eindeSpel() {
+  document.body.innerHTML = `
+    <div class="container">
+      <h1>EINDE SPEL</h1>
+      <p>Totale score: ${score}</p>
+    </div>`;
+}
+
+startRonde();
